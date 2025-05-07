@@ -66,81 +66,83 @@ def prepare_dataset():
 
     return tokenized_wiki
 
-model_id = "meta-llama/Llama-3.2-3B-Instruct"
 
-# Load tokenizer
-tokenizer = AutoTokenizer.from_pretrained(model_id)
-tokenizer.pad_token = tokenizer.eos_token
-tokenizer.padding_side = "right"
+if __name__ == "__main__":
+    model_id = "meta-llama/Llama-3.2-3B-Instruct"
 
-# First load the model in FP16
-model = AutoModelForCausalLM.from_pretrained(
-    model_id,
-    torch_dtype=torch.float16,
-    device_map="auto",
-    trust_remote_code=True
-)
+    # Load tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.padding_side = "right"
 
-# Quantize the model using HQQ
-quant_config = get_quant_config_slm(model)
-AutoHQQHFModel.quantize_model(model, quant_config=quant_config, compute_dtype=torch.float16, device="cuda")
+    # First load the model in FP16
+    model = AutoModelForCausalLM.from_pretrained(
+        model_id,
+        torch_dtype=torch.float16,
+        device_map="auto",
+        trust_remote_code=True
+    )
 
-# Prepare the model for LoRA training
-quantized_model = prepare_model_for_kbit_training(model)
+    # Quantize the model using HQQ
+    quant_config = get_quant_config_slm(model)
+    AutoHQQHFModel.quantize_model(model, quant_config=quant_config, compute_dtype=torch.float16, device="cuda")
 
-# Define LoRA configuration
-peft_config = LoraConfig(
-    r=16,
-    lora_alpha=32,
-    lora_dropout=0.05,
-    bias="none",
-    task_type="CAUSAL_LM",
-    target_modules=[
-        "q_proj",
-        "k_proj",
-        "v_proj",
-        "o_proj",
-        "gate_proj",
-        "up_proj",
-        "down_proj"
-    ]
-)
+    # Prepare the model for LoRA training
+    quantized_model = prepare_model_for_kbit_training(model)
 
-# Apply LoRA adapters
-lora_model = get_peft_model(quantized_model, peft_config)
-tokenized_wiki = prepare_dataset()
+    # Define LoRA configuration
+    peft_config = LoraConfig(
+        r=16,
+        lora_alpha=32,
+        lora_dropout=0.05,
+        bias="none",
+        task_type="CAUSAL_LM",
+        target_modules=[
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+        ]
+    )
 
-# Define training arguments
-training_args = TrainingArguments(
-    output_dir="./llama-3-2-3b-hqq-lora-wiki2",
-    per_device_train_batch_size=4,
-    gradient_accumulation_steps=4,
-    learning_rate=2e-4,
-    num_train_epochs=3,
-    warmup_ratio=0.1,
-    logging_steps=50,
-    save_steps=500,
-    evaluation_strategy="steps",
-    eval_steps=500,
-    save_total_limit=3,
-    load_best_model_at_end=True,
-    report_to="tensorboard",
-    lr_scheduler_type="cosine",
-    fp16=True,
-    remove_unused_columns=False,
-)
+    # Apply LoRA adapters
+    lora_model = get_peft_model(quantized_model, peft_config)
+    tokenized_wiki = prepare_dataset()
 
-# Initialize SFT Trainer
-trainer = SFTTrainer(
-    model=lora_model,
-    args=training_args,
-    train_dataset=tokenized_wiki["train"],
-    eval_dataset=tokenized_wiki["validation"],
-    peft_config=peft_config,
-)
+    # Define training arguments
+    training_args = TrainingArguments(
+        output_dir="./llama-3-2-3b-hqq-lora-wiki2",
+        per_device_train_batch_size=4,
+        gradient_accumulation_steps=4,
+        learning_rate=2e-4,
+        num_train_epochs=3,
+        warmup_ratio=0.1,
+        logging_steps=50,
+        save_steps=500,
+        evaluation_strategy="steps",
+        eval_steps=500,
+        save_total_limit=3,
+        load_best_model_at_end=True,
+        report_to="tensorboard",
+        lr_scheduler_type="cosine",
+        fp16=True,
+        remove_unused_columns=False,
+    )
 
-# Start training
-trainer.train()
+    # Initialize SFT Trainer
+    trainer = SFTTrainer(
+        model=lora_model,
+        args=training_args,
+        train_dataset=tokenized_wiki["train"],
+        eval_dataset=tokenized_wiki["validation"],
+        peft_config=peft_config,
+    )
 
-# Save the final model
-lora_model.save_pretrained("./llama-3-2-3b-hqq-lora-wiki2-final")
+    # Start training
+    trainer.train()
+
+    # Save the final model
+    lora_model.save_pretrained("./llama-3-2-3b-hqq-lora-wiki2-final")

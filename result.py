@@ -86,12 +86,26 @@ def main():
     device = 'cuda:0'
     
     ### === TODO: Load your model (you may change this part) ===
+    from peft import LoraConfig, get_peft_model, PeftModel
+    from hqq_utils import AutoHQQHFModel
+    from llm import get_quant_config_slm
     model_name = "meta-llama/Llama-3.2-3B-Instruct"   
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
         torch_dtype=torch.float16,
         device_map=device,
+        attn_implementation="flash_attention_2"
     )
+    quant_config = get_quant_config_slm(model)
+    AutoHQQHFModel.quantize_model(model, quant_config=quant_config, compute_dtype=torch.float16, device="cuda")
+    model = PeftModel.from_pretrained(
+        model,
+        "llama-3-2-3b-hqq-lora-wiki2-final",
+        torch_dtype=torch.float16,
+        device_map=device,
+        # attn_implementation="flash_attention_2"
+    )
+    model = torch.compile(model, mode="max-autotune")
     #####################################
     
     model.eval() 

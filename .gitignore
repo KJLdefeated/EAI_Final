@@ -1,2 +1,4 @@
 llama-3-2-3b-hqq-lora-wiki2/*
+llama-3-2-3b-hqq-lora-wiki2-final/*
 __pycache__/*
+*.csv
