@@ -23,8 +23,8 @@ def get_quant_config_slm(model):
 
     for i in range(n_layers):
         quant_config[f'model.layers.{i}.self_attn.q_proj'] = q4_config
-        quant_config[f'model.layers.{i}.self_attn.k_proj'] = q4_config
-        quant_config[f'model.layers.{i}.self_attn.v_proj'] = q4_config
+        quant_config[f'model.layers.{i}.self_attn.k_proj'] = q2_config
+        quant_config[f'model.layers.{i}.self_attn.v_proj'] = q2_config
         quant_config[f'model.layers.{i}.self_attn.o_proj'] = q4_config
         
         quant_config[f'model.layers.{i}.mlp.gate_proj'] = q4_config
@@ -145,4 +145,4 @@ if __name__ == "__main__":
     trainer.train()
 
     # Save the final model
-    lora_model.save_pretrained("./llama-3-2-3b-hqq-lora-wiki2-final")
+    lora_model.save_pretrained("./llama-3-2-3b-hqq-lora-wiki2-final-kv-2-bit")

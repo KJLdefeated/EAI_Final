@@ -100,7 +100,8 @@ def main():
     AutoHQQHFModel.quantize_model(model, quant_config=quant_config, compute_dtype=torch.float16, device="cuda")
     model = PeftModel.from_pretrained(
         model,
-        "llama-3-2-3b-hqq-lora-wiki2-final",
+        # "llama-3-2-3b-hqq-lora-wiki2-final",
+        "llama-3-2-3b-hqq-lora-wiki2-final-kv-2-bit",
         torch_dtype=torch.float16,
         device_map=device,
         # attn_implementation="flash_attention_2"
