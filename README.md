@@ -5,6 +5,6 @@
 2. torch compile
 
 ## TODO
-1. KV Cache
+1. ~~KV Cache~~ Provided Generate 效果不好
 2. Flash Attention Forward (T4 not support, implement our own)
 3. Triton kernel Forward
