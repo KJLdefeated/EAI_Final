@@ -2,7 +2,6 @@
 import torch
 import torch.nn as nn
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from transformers import LogitsProcessorList, LogitsProcessor
 from tqdm.auto import tqdm
 from datasets import load_dataset
 import random
@@ -61,20 +60,19 @@ def evaluate_ppl(model, tokenizer, device="cuda:0"):
     test_dataset = load_dataset("wikitext", "wikitext-2-raw-v1", split="test")
     
     test_enc = tokenizer("\n\n".join(test_dataset["text"]), return_tensors="pt")
-    model.seqlen = 2048
+    seqlen = 2048
     test_enc = test_enc.input_ids
     
-    nsamples = test_enc.numel() // model.seqlen
+    nsamples = test_enc.numel() // seqlen
     nll, ntok = 0.0, 0
     for i in tqdm(range(nsamples), desc="Evaluating..."):
-        batch = test_enc[:, (i * model.seqlen):((i + 1) * model.seqlen)]  # shape: (1, 2048)
+        batch = test_enc[:, (i * seqlen):((i + 1) * seqlen)]  # shape: (1, 2048)
         
         with torch.no_grad():
-            #result = model.forward(batch)
             text = tokenizer.decode(batch[0], skip_special_tokens=False, clean_up_tokenization_spaces=False)
             generated_info = model.generate([text], sp_ppl)[0]
             logps = [p[id].logprob for p, id in zip(generated_info.prompt_logprobs[1:], generated_info.prompt_token_ids[1:])]
-            #input(len(logps))
+            #print(len(logps))
 
         nll  -= sum(logps)
         ntok += len(logps)
@@ -91,12 +89,11 @@ def main():
     
     ### === TODO: Load your model (you may change this part) ===
 
-    #model_name = "Llama-3.2-3B-Instruct-awq"
     #model_name = "meta-llama/Llama-3.2-3B-Instruct"
     model_name = "BensonW/EAI_Final_awq"
     model = LLM(model=model_name,
         dtype="auto",
-        max_model_len=2048,
+        max_model_len=2049,
         gpu_memory_utilization=0.5,
         tensor_parallel_size=1,
     )
