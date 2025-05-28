@@ -94,7 +94,7 @@ def main():
         model_name,
         torch_dtype=torch.float16,
         device_map=device,
-        attn_implementation="flash_attention_2"
+        # attn_implementation="flash_attention_2"
     )
     quant_config = get_quant_config_slm(model)
     AutoHQQHFModel.quantize_model(model, quant_config=quant_config, compute_dtype=torch.float16, device="cuda")
