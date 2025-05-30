@@ -76,15 +76,15 @@ def get_tokenizer(model_name):
 
 
 def run():
-    model_name = "meta-llama/Llama-3.2-1B-Instruct"
+    model_name = "meta-llama/Llama-3.2-3B-Instruct"
     lora_config = get_lora_config(rank=16, alpha=32)
     lora_model = get_lora_model(model_name, lora_config)
     tokenizer = get_tokenizer(model_name)
     train_dataset = get_dataset(tokenizer, split="train[:15000]")
     
     training_args = TrainingArguments(
-        run_name="Llama-3.2-1B-Instruct-lora-finetuing",
-        output_dir="Llama-3.2-1B-Instruct-lora-checkpoints",
+        run_name="Llama-3.2-3B-Instruct-lora-finetuing",
+        output_dir="Llama-3.2-3B-Instruct-lora-checkpoints",
         overwrite_output_dir=True,
         num_train_epochs=1,
         per_device_train_batch_size=8,
