@@ -1,6 +1,7 @@
 # Edge AI Final Project: LLM Acceleration
 
 ## Reproduce
+python 3.11 with T4 GPU
 1. python train_lora.py
 2. python merge_lora.py
 3. python quant_awq.py
