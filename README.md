@@ -1,10 +1,9 @@
 # Edge AI Final Project: LLM Acceleration
 
-## Features
-1. hqq 4-bit + Lora fine-tuning
-2. torch compile
-
-## TODO
-1. KV Cache
-2. Flash Attention Forward (T4 not support, implement our own)
-3. Triton kernel Forward
+## Reproduce
+1. python train_lora.py
+2. python merge_lora.py
+3. python quant_awq.py
+4. (repeat above three steps for Llama 1B model as draft model)
+5. python result_ppl.py
+6. python result_tput.py
