@@ -101,8 +101,8 @@ def main():
             "num_speculative_tokens": 6,
         },
         compilation_config={
-            "cudagraph_capture_sizes": [1, 2, 4],
-            "max_capture_size": 4,
+            "cudagraph_capture_sizes": [1, 2, 4, 8],
+            "max_capture_size": 8,
         },
     )
 
