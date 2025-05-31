@@ -100,6 +100,10 @@ def main():
             "model": "BensonW/EAI-Final-draft-model",
             "num_speculative_tokens": 6,
         },
+        compilation_config={
+            "cudagraph_capture_sizes": [1, 2, 4],
+            "max_capture_size": 4,
+        },
     )
 
     sp = SamplingParams(max_tokens=max_new_tokens, temperature=0.0)  # greedy
@@ -202,3 +206,4 @@ def main():
         
 if __name__ == '__main__':
     main()
+    torch.distributed.detroy_process_group()
