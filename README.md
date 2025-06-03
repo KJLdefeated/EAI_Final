@@ -1,8 +1,12 @@
 # Edge AI Final Project: LLM Acceleration
 
+## Result
+PPL: 11.12
+TPUT: 83.0
+
 ## Features
-1. hqq 4-bit + Lora fine-tuning
-2. torch compile
+1. Lora Fine-tune
+2. GPTQ
 
 ## TODO
 1. KV Cache
