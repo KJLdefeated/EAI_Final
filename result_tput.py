@@ -102,8 +102,8 @@ def main():
     ### === TODO: Load your model (you may change this part) ===
 
     # model_name = "meta-llama/Llama-3.2-3B-Instruct"
-    quantized_model_dir = "Llama-3.2-3B-Instruct-lora-4bit-g128"
-    original_model_dir = "meta-llama/Llama-3.2-3B-Instruct"
+    quantized_model_dir = "c1uc/Llama-3.2-3B-Instruct-lora-4bit-g128"
+    #original_model_dir = "meta-llama/Llama-3.2-3B-Instruct"
     quantize_config = BaseQuantizeConfig(
         bits=4,  # quantize model to 4-bit
         group_size=128,  # it is recommended to set the value to 128
@@ -112,14 +112,20 @@ def main():
     # model = AutoGPTQForCausalLM.from_quantized(model_name, device="cuda:0")
     model = LLM(
         model=quantized_model_dir,
-        tokenizer=original_model_dir,
+        tokenizer=quantized_model_dir,
         dtype="auto",
+        quantization='gptq',
         max_model_len=2048,
-        gpu_memory_utilization=0.75,
+        gpu_memory_utilization=0.9,
         tensor_parallel_size=1,
+        speculative_config={
+            "model": "BensonW/EAI-Final-draft-model-gptq",
+            "quantization": "gptq",
+            "num_speculative_tokens": 3,
+        },
         compilation_config={
-            "cudagraph_capture_sizes": [1],
-            "max_capture_size": 1,
+            "cudagraph_capture_sizes": [1, 2, 4, 8, 16],
+            "max_capture_size": 16,
         },
     )
 
@@ -127,7 +133,7 @@ def main():
     #####################################
 
     # model.eval()
-    tokenizer = AutoTokenizer.from_pretrained(original_model_dir)
+    tokenizer = AutoTokenizer.from_pretrained(quantized_model_dir)
 
     # === (Optional) Uncomment the following lines if using the custom generate() function. ===
     # model.prefill_forward = model.forward
