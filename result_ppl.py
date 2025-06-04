@@ -87,14 +87,9 @@ def main():
     device = 'cuda:0'
     
     ### === TODO: Load your model (you may change this part) ===
-    from auto_gptq import AutoGPTQForCausalLM, BaseQuantizeConfig
-    quantized_model_dir = "c1uc/Llama-3.2-3B-Instruct-lora-4bit-g128"
-    original_model_dir = "meta-llama/Llama-3.2-3B-Instruct"
-    quantize_config = BaseQuantizeConfig(
-        bits=4,  # quantize model to 4-bit
-        group_size=128,  # it is recommended to set the value to 128
-        desc_act=False,  # set to False can significantly speed up inference but the perplexity may slightly bad
-    )
+    from auto_gptq import AutoGPTQForCausalLM
+    quantized_model_dir = "Llama-3.2-3B-Instruct-lora-4bit-g128"
+    #quantized_model_dir = "c1uc/Llama-3.2-3B-Instruct-lora-4bit-g128"
     model = AutoGPTQForCausalLM.from_quantized(
         quantized_model_dir,
         device="cuda:0",
@@ -183,6 +178,8 @@ def main():
     
     # Save results to CSV
     import csv
+
+    #rounded_tput = round(org_tput, 1)
     ppl = round(ppl, 2)
 
     with open("result.csv", mode="w", newline="") as file:
