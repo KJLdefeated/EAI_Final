@@ -2,3 +2,5 @@
 datasets==3.6.0
 vllm==0.9.0.1
 torch==2.7.0
+auto_gptq
+sglang
