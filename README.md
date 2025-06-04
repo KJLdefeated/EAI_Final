@@ -30,8 +30,8 @@ python result_tput.py && python result_ppl.py
 
 ## Quantize the LLMs from the a fine-tuned lora model
 ```bash
-python merge_lora.py
-python quant_gptq.py
+python result_tput.py && python result_ppl.py
+```
 ```
 Then make sure to modify the models in `result_*.py` into the saved model path.
 ```bash
