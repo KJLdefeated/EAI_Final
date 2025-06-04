@@ -25,8 +25,7 @@ pip install -r requirements.txt
 Remember to use `huggingface-cli login` with a valid token with `Read access to contents of all public gated repos you can access`
 
 ```bash
-python result_tput.py
-python result_ppl.py
+python result_tput.py && python result_ppl.py
 ```
 
 ## Quantize the LLMs from the a fine-tuned lora model
