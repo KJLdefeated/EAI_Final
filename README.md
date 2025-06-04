@@ -10,7 +10,7 @@ clone this repo
 ```bash
 git clone https://github.com/KJLdefeated/EAI_Final.git && cd EAI_Final
 ```
-(optional) create a virtual environment
+(optional) create a virtual environment (!important! please use python 3.11)
 ```bash
 bash
 conda create -n eai python=3.11 -y
