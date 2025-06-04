@@ -93,7 +93,7 @@ def main():
     device = "cuda:0"
 
     ### === TODO: Load your model (you may change this part) ===
-    quantized_model_dir = "Llama-3.2-3B-Instruct-lora-4bit-g128"
+    quantized_model_dir = "c1uc/Llama-3.2-3B-Instruct-lora-4bit-g128"
     model = LLM(
         model=quantized_model_dir,
         tokenizer=quantized_model_dir,
@@ -103,9 +103,9 @@ def main():
         gpu_memory_utilization=0.75,
         tensor_parallel_size=1,
         speculative_config={
-            "model": "Llama-3.2-1B-Instruct-lora-4bit-g128",
+            "model": "BensonW/EAI-Final-draft-model-gptq",
             "quantization": "gptq",
-            "num_speculative_tokens": 4,
+            "num_speculative_tokens": 3,
         },
         compilation_config={
             "cudagraph_capture_sizes": [1, 2, 4, 8],
