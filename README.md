@@ -25,7 +25,7 @@ pip install -r requirements.txt
 Remember to use `huggingface-cli login` with a valid token with `Read access to contents of all public gated repos you can access`
 
 ```bash
-python result_tput.py && python result_ppl.py && combine_result.py
+python result_tput.py && python result_ppl.py && python combine_result.py
 ```
 
 ## Quantize the LLMs from the a fine-tuned lora model
@@ -37,5 +37,5 @@ python quant_gptq.py
 
 Then make sure to modify the models in `result_*.py` into the saved model path.
 ```bash
-python result_tput.py && python result_ppl.py && combine_result.py
+python result_tput.py && python result_ppl.py && python combine_result.py
 ```
