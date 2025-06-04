@@ -14,6 +14,7 @@ git clone https://github.com/KJLdefeated/EAI_Final.git && cd EAI_Final
 ```bash
 bash
 conda create -n eai python=3.11 -y
+conda activate eai
 ```
 install the requirements
 ```bash
