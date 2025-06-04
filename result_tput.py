@@ -221,12 +221,12 @@ def main():
     import csv
 
     rounded_tput = round(org_tput, 1)
-    # ppl = round(ppl, 2)
+    ppl = -1 #round(ppl, 2)
 
     with open("result.csv", mode="w", newline="") as file:
         writer = csv.writer(file)
         writer.writerow(["Id", "value"])
-        # writer.writerow([0, ppl])
+        writer.writerow([0, ppl])
         writer.writerow([1, rounded_tput])
 
 
