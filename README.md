@@ -12,7 +12,8 @@ git clone https://github.com/KJLdefeated/EAI_Final.git && cd EAI_Final
 ```
 (optional) create a virtual environment
 ```bash
-python3 -m venv .venv && source .venv/bin/activate
+bash
+conda create -n eai python=3.11 -y
 ```
 install the requirements
 ```bash
