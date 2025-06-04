@@ -88,8 +88,8 @@ def main():
     
     ### === TODO: Load your model (you may change this part) ===
     from auto_gptq import AutoGPTQForCausalLM
-    quantized_model_dir = "Llama-3.2-3B-Instruct-lora-4bit-g128"
-    #quantized_model_dir = "c1uc/Llama-3.2-3B-Instruct-lora-4bit-g128"
+    #quantized_model_dir = "Llama-3.2-3B-Instruct-lora-4bit-g128"
+    quantized_model_dir = "c1uc/Llama-3.2-3B-Instruct-lora-4bit-g128"
     model = AutoGPTQForCausalLM.from_quantized(
         quantized_model_dir,
         device="cuda:0",
