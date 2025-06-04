@@ -22,31 +22,32 @@ def main():
         model_path=MODEL_PATH,
         quantization="gptq",
         dtype="float16",
-        mem_fraction_static=0.7,
+        mem_fraction_static=0.75,
         # tensor_parallel_size=1,
         enable_torch_compile=True,
         cuda_graph_max_bs=80,
     )
+    # Uncomment the following lines to use speculative execution
     # engine = sgl.Engine(
     #     model_path=MODEL_PATH,
     #     quantization="gptq",
     #     dtype="float16",
-    #     mem_fraction_static=0.6,
+    #     mem_fraction_static=0.4,
     #     enable_torch_compile=True,
     #     speculative_algorithm="EAGLE",
-    #     speculative_draft_model_path="BensonW/EAI-Final-draft-model-gptq",
+    #     speculative_draft_model_path=MODEL_PATH,
     #     speculative_num_steps=3,
     #     speculative_eagle_topk=4,
-    #     speculative_num_draft_tokens=16,
+    #     speculative_num_draft_tokens=8,
     #     cuda_graph_max_bs=8,
     #     # 其他參數視需要加入
     # )
 
-    # ---------- 1. Sampling 參數 ----------
+   
     MAX_NEW_TOKENS = 256
     sp = {"max_new_tokens": MAX_NEW_TOKENS, "temperature": 0.0}
 
-    # ---------- 2. Warm-up ----------
+   
     for _ in tqdm(range(5), desc="Warm-up"):
         engine.generate(["Explain what AI is."], sp)
 
@@ -54,31 +55,31 @@ def main():
     test_prompt = "How to learn a new language?"
     input_ids   = tokenizer(test_prompt, return_tensors="pt")["input_ids"]
 
-    tputs, times = [], []
-    for _ in tqdm(range(10), desc="Benchmark"):
+    tputs, time_record = [], []
+    for _ in tqdm(range(10), desc="Test Inference"):
         torch.cuda.synchronize()
-        start = torch.cuda.Event(enable_timing=True); start.record()
+        start = torch.cuda.Event(enable_timing=True)
+        end = torch.cuda.Event(enable_timing=True)
+        start.record()
 
         out = engine.generate([test_prompt], sp)[0]
-        # print(f"Output: {out}, keys = {out.keys()}")
-        # out_len = len(out["token_ids"]) - input_ids.shape[1]
-        out_len = out['meta_info']['completion_tokens']
+        #out_len = out['meta_info']['completion_tokens']
+        out_len = out['meta_info']['completion_tokens'] - out['meta_info']['prompt_tokens']
+        #print('outlen:', out_len)
 
-        end = torch.cuda.Event(enable_timing=True); end.record()
+        end.record()
         torch.cuda.synchronize()
         sec = start.elapsed_time(end) / 1000
-        tputs.append(out_len / sec);  times.append(sec)
+        tputs.append(out_len / sec)
+        time_record.append(sec)
+        print(out.keys(), out)
 
-    # ---------- 4. 結果 ----------
-    # resp_text = tokenizer.decode(
-    #     out["token_ids"][input_ids.shape[1]:], skip_special_tokens=True
-    # )
     resp_text = out['text']
     avg_tput = np.mean(np.sort(tputs)[2:-2])
 
     print(f"Prompt:\n{test_prompt}\n---\n{resp_text}\n")
     print(f"Throughput (avg): {avg_tput:.1f} toks/s")
-
+    print(f"Time: {time_record}")
     # ---------- 5. 存 CSV ----------
     with open("result.csv", "w", newline="") as f:
         csv.writer(f).writerows([["Id", "value"], [1, round(avg_tput, 1)]])
