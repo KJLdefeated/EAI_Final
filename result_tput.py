@@ -14,6 +14,9 @@ from auto_gptq import AutoGPTQForCausalLM, BaseQuantizeConfig
 # Only "load model" and "generate" function selection can be modified.
 # DO NOT change PPL calculation, timing, or throughput logic.
 #####################################################################
+sp = SamplingParams(max_tokens=256, temperature=0.0)  # greedy
+sp_ppl = SamplingParams(max_tokens=1, prompt_logprobs=1, temperature=0.0)  # greedy
+
 
 # === (Optional) Define your own custom generate function. ===
 # This is useful if you want full control over KV cache and generation steps.
@@ -58,30 +61,34 @@ def generate(model, input_ids, past_key_values, max_new_tokens):
 
 def evaluate_ppl(model, tokenizer, device="cuda:0"):
     test_dataset = load_dataset("wikitext", "wikitext-2-raw-v1", split="test")
-    
+
     test_enc = tokenizer("\n\n".join(test_dataset["text"]), return_tensors="pt")
-    model.seqlen = 2048
-    test_enc = test_enc.input_ids.to(device)
-    
-    nsamples = test_enc.numel() // model.seqlen
-    nlls = []  
+    seqlen = 2048
+    test_enc = test_enc.input_ids
+
+    nsamples = test_enc.numel() // seqlen
+    nll, ntok = 0.0, 0
     for i in tqdm(range(nsamples), desc="Evaluating..."):
-        batch = test_enc[:, (i * model.seqlen):((i + 1) * model.seqlen)]
-        
+        batch = test_enc[:, (i * seqlen) : ((i + 1) * seqlen)]  # shape: (1, 2048)
+
         with torch.no_grad():
-            lm_logits = model(batch).logits
+            text = tokenizer.decode(
+                batch[0], skip_special_tokens=False, clean_up_tokenization_spaces=False
+            )
+            generated_info = model.generate([text], sp_ppl)[0]
+            logps = [
+                p[id].logprob
+                for p, id in zip(
+                    generated_info.prompt_logprobs[1:-1],
+                    generated_info.prompt_token_ids[1:-1],
+                )
+            ]
+            # print(len(logps))
 
-        shift_logits = lm_logits[:, :-1, :].contiguous().float()
-        shift_labels = test_enc[:, (i * model.seqlen):((i + 1) * model.seqlen)][:, 1:]
+        nll -= sum(logps)
+        ntok += len(logps)
 
-        loss_fct = nn.CrossEntropyLoss()
-        loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
-        neg_log_likelihood = loss.float() * model.seqlen
-        nlls.append(neg_log_likelihood)
-
-    ppl = torch.exp(torch.stack(nlls).sum() / (nsamples * model.seqlen))
-    
-    return ppl.item()
+    return np.exp(nll / ntok).item()
 
 
 def main():
@@ -93,14 +100,23 @@ def main():
     device = "cuda:0"
 
     ### === TODO: Load your model (you may change this part) ===
+
+    # model_name = "meta-llama/Llama-3.2-3B-Instruct"
     quantized_model_dir = "c1uc/Llama-3.2-3B-Instruct-lora-4bit-g128"
+    #original_model_dir = "meta-llama/Llama-3.2-3B-Instruct"
+    quantize_config = BaseQuantizeConfig(
+        bits=4,  # quantize model to 4-bit
+        group_size=128,  # it is recommended to set the value to 128
+        desc_act=False,  # set to False can significantly speed up inference but the perplexity may slightly bad
+    )
+    # model = AutoGPTQForCausalLM.from_quantized(model_name, device="cuda:0")
     model = LLM(
         model=quantized_model_dir,
         tokenizer=quantized_model_dir,
         dtype="auto",
         quantization='gptq',
         max_model_len=2048,
-        gpu_memory_utilization=0.75,
+        gpu_memory_utilization=0.9,
         tensor_parallel_size=1,
         speculative_config={
             "model": "BensonW/EAI-Final-draft-model-gptq",
@@ -108,10 +124,11 @@ def main():
             "num_speculative_tokens": 3,
         },
         compilation_config={
-            "cudagraph_capture_sizes": [1, 2, 4, 8],
-            "max_capture_size": 8,
+            "cudagraph_capture_sizes": [1, 2, 4, 8, 16],
+            "max_capture_size": 16,
         },
     )
+
     sp = SamplingParams(max_tokens=max_new_tokens, temperature=0.0)  # greedy
     #####################################
 
@@ -204,12 +221,12 @@ def main():
     import csv
 
     rounded_tput = round(org_tput, 1)
-    ppl = -1 #round(ppl, 2) # ppl not available
+    # ppl = round(ppl, 2)
 
     with open("result.csv", mode="w", newline="") as file:
         writer = csv.writer(file)
         writer.writerow(["Id", "value"])
-        writer.writerow([0, ppl]) 
+        # writer.writerow([0, ppl])
         writer.writerow([1, rounded_tput])
 
 
