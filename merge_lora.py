@@ -1,7 +1,7 @@
 from peft import AutoPeftModelForCausalLM
 import torch
 
-model_id = "BensonW/EAI-Final-LoRA"  # Llama-3.2-3B-Instruct-lora-checkpoints/checkpoint-70
+model_id = "BensonW/EAI-Final-LoRA"  # model_id = "BensonW/EAI-Final-LoRA-1B"
 peft_model = AutoPeftModelForCausalLM.from_pretrained(model_id, torch_dtype=torch.float16)
 print(f"Model before merged: {type(peft_model)}")
 
