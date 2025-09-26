@@ -1,5 +1,7 @@
 # Edge AI Final Project: LLM Acceleration
 
+[Report](https://hackmd.io/ilwYkcNHT92vT83Rgmz8RA?view)
+
 ## Features
 1. Lora Fine-tune
 2. GPTQ
