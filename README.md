@@ -24,7 +24,7 @@ We focus on improving both **throughput** and **model quality** for the `meta-ll
 
 ---
 
-## 🔬 Methodology
+## Methodology
 
 We follow a **workflow-oriented order**: analyze the model → improve accuracy → compress weights → accelerate inference.
 
@@ -94,7 +94,7 @@ This yields **multi-token parallelism** during generation.
 
 ---
 
-## ⚙️ Implementation Notes
+## Implementation Notes
 
 ### Inference Frameworks
 We tested two high-performance engines:
@@ -121,7 +121,7 @@ compilation_config = {
 
 ---
 
-## 📊 Experimental Results
+## Experimental Results
 
 **Hardware:** NVIDIA Tesla T4
 **Dataset:** wikitext-2-raw-v1
@@ -148,7 +148,7 @@ Base model perplexity: 11.12
 
 ---
 
-## 🔎 Insights & Deep Dives
+## Additional Insignts
 
 ### Radix vs Paged Attention
 
@@ -165,7 +165,7 @@ Without speculative decoding, this contributes to a **+6.19 tok/s** gain over vL
 
 ---
 
-## 📚 References
+## References
 
 * Hu et al., *LoRA: Low-Rank Adaptation of Large Language Models*, 2021
 * Frantar et al., *GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers*, 2022
